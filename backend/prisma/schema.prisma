@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//Model
+
+model User {
+  id String @id @default(uuid())
+  username String @unique
+  email String @unique 
+  password String
+  role Role @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  documents Document[]
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String @unique
+  subCategories SubCategory[]
+  documents Document[]
+  @@map("categories")
+}
+
+model SubCategory{
+  id String @id @default(uuid())
+  name String @unique
+  // Relasi ke tabel Category
+  categoryId String
+  category Category @relation(fields : [categoryId], references : [id], onDelete : Cascade)
+  documents Document[]
+  @@map("sub_categories")
+}
+
+
+model Document {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?  // Tanda tanya (?) artinya opsional / boleh kosong
+  fileUrl       String   // Tempat kita menyimpan nama file PDF-nya
+
+  // Relasi ke User (Siapa yang upload?)
+  uploaderId    String
+  uploader      User     @relation(fields: [uploaderId], references: [id])
+
+  // Relasi ke Kategori
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+
+  // Relasi ke SubKategori (Opsional, karena ada Kategori yang tidak punya Sub)
+  subCategoryId String?
+  subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id])
+  unitPenyusun     String
+  tanggalPublikasi DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("documents")
+}
+// Untuk Carousel / Slider di Beranda Utama
+model MasterBeranda {
+  id        String   @id @default(uuid())
+  judul     String   // Teks besar
+  label     String?  // Teks kecil (opsional)
+  imageUrl  String   // Nama file gambar
+  isActive  Boolean  @default(true) // Tombol on/off
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("master_beranda")
+}
