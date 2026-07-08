@@ -94,3 +94,24 @@ export const deleteDocument = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const getDocumentsBySubCategory = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const subCategoryId = req.params.subCategoryId as string;
+
+        const documents = await documentService.getDocumentsBySubCategory(subCategoryId);
+        res.status(200).json({ message: 'Berhasil', data: documents });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+export const getDocumentsByCategory = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const categoryId = req.params.categoryId as string;
+        const documents = await documentService.getDocumentsByCategory(categoryId);
+        res.status(200).json({ message: 'Berhasil', data: documents });
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
+};

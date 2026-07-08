@@ -6,7 +6,8 @@ import { isatty } from 'node:tty';
 
 export const createBanner = async (req: Request, res: Response): Promise<void> => {
     try {
-        const file = req.file;
+        const file = (req as any).file;
+
         if (!file) {
             res.status(400).json({
                 message: 'Gambar banner wajib diupload'
@@ -86,8 +87,8 @@ export const updateBanner = async (req: Request, res: Response): Promise<void> =
         if (label !== undefined) dataToUpdate.label = label;
         if (isActive !== undefined) dataToUpdate.isActive = isActive === 'false' ? false : true;
         // PENTING: Jika ada gambar BARU yang diupload, tambahkan ke dataToUpdate
-        if (req.file) {
-            dataToUpdate.imageUrl = req.file.filename;
+        if ((req as any).file) {
+            dataToUpdate.imageUrl = (req as any).file.filename;
         }
 
         const updatedBanner = await bannerService.updateBanner(id, dataToUpdate);

@@ -13,13 +13,27 @@ async function main() {
         where: { email: 'admin@bjb.co.id' },
         update: {},
         create: {
-            username: 'Admin BJB',
+            username: 'admin',
             email: 'admin@bjb.co.id',
             password: hashedPassword,
             role: 'ADMIN',
         },
     });
     console.log('✓ Seed Admin berhasil:', admin.email);
+    // 1b. Seed User Viewer
+    const viewerPassword = await bcrypt.hash('viewer123', 10);
+    const viewer = await prisma.user.upsert({
+        where: { email: 'viewer@bjb.co.id' },
+        update: {},
+        create: {
+            username: 'viewer',
+            email: 'viewer@bjb.co.id',
+            password: viewerPassword,
+            role: 'VIEWER',
+        },
+    });
+    console.log('✓ Seed Viewer berhasil:', viewer.email);
+
 
     // 2. Daftar Kategori FIX yang diminta
     const categoriesData = [

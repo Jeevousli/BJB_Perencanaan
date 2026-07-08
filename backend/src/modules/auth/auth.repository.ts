@@ -1,8 +1,8 @@
 import prisma from '../../config/database';
 
-export const findUserByEmail = async (email: string) => {
+export const findUserByUsername = async (username: string) => {
     return prisma.user.findUnique({
-        where: { email },
+        where: { username },
     })
 }
 

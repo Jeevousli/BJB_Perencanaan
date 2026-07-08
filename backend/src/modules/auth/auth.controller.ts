@@ -5,10 +5,10 @@ import { AuthRequest } from '../../middlewares/auth.middleware';
 export const login = async (req: Request, res: Response) => {
     try {
         const {
-            email, password
+            username, password
         } = req.body;
 
-        const result = await loginService({ email, password });
+        const result = await loginService({ username, password });
 
         res.status(200).json({
             message: 'Login Berhasil',

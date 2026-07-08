@@ -31,3 +31,11 @@ export const deleteDocument = async (id: string) => {
 
     return await documentRepository.deleteDocument(id)
 }
+
+export const getDocumentsBySubCategory = async (subCategoryId: string) => {
+    return await documentRepository.findDocumentsBySubCategory(subCategoryId);
+};
+
+export const getDocumentsByCategory = async (categoryId: string) => {
+    return await documentRepository.findDocumentsByCategory(categoryId);
+};

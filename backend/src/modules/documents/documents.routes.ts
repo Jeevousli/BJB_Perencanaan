@@ -10,6 +10,9 @@ router.use(authenticateJWT);
 
 // Semua orang (ADMIN & VIEWER) bisa melihat daftar dokumen
 router.get('/', authorizeRole(['ADMIN', 'VIEWER']), documentController.getAllDocuments);
+router.get('/by-subcategory/:subCategoryId', authorizeRole(['ADMIN', 'VIEWER']), documentController.getDocumentsBySubCategory);
+router.get('/by-category/:categoryId', authorizeRole(['ADMIN', 'VIEWER']), documentController.getDocumentsByCategory);
+
 router.get('/:id', authorizeRole(['ADMIN', 'VIEWER']), documentController.getDocumentById);
 
 // HANYA ADMIN yang boleh Upload & Delete!
@@ -22,5 +25,6 @@ router.post(
 );
 
 router.delete('/:id', authorizeRole(['ADMIN']), documentController.deleteDocument);
+
 
 export default router;

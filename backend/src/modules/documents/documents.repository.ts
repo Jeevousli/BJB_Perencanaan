@@ -46,3 +46,29 @@ export const deleteDocument = async (id: string) => {
         where: { id }
     })
 }
+
+// Ambil dokumen berdasarkan subCategoryId
+export const findDocumentsBySubCategory = async (subCategoryId: string) => {
+    return prisma.document.findMany({
+        where: { subCategoryId },
+        include: {
+            uploader: { select: { username: true } },
+            category: true,
+            subCategory: true
+        },
+        orderBy: { tanggalPublikasi: 'desc' }
+    });
+};
+
+// Ambil dokumen berdasarkan categoryId utama
+export const findDocumentsByCategory = async (categoryId: string) => {
+    return prisma.document.findMany({
+        where: { categoryId },
+        include: {
+            uploader: { select: { username: true } },
+            category: true,
+            subCategory: true
+        },
+        orderBy: { tanggalPublikasi: 'desc' }
+    });
+};
