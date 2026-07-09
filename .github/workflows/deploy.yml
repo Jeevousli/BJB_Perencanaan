@@ -21,6 +21,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Buat variabel REPO_LC berisi nama repository dalam huruf kecil semua
+      # GHCR mewajibkan nama image selalu lowercase
+      - name: Set lowercase repository name
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
       # Login ke GitHub Container Registry (GHCR)
       # GITHUB_TOKEN adalah secret otomatis dari GitHub, tidak perlu dibuat manual
       - name: Login to GitHub Container Registry
@@ -36,7 +41,7 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ghcr.io/${{ github.repository }}/backend:latest
+          tags: ghcr.io/${{ env.REPO_LC }}/backend:latest
 
       # Build image Frontend dari folder ./frontend dan push ke GHCR
       - name: Build and Push Frontend Image
@@ -44,7 +49,7 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: ghcr.io/${{ github.repository }}/frontend:latest
+          tags: ghcr.io/${{ env.REPO_LC }}/frontend:latest
 
   # ===================================================
   # JOB 2: Deploy ke VPS Azure
