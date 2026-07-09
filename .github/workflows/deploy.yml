@@ -1,0 +1,91 @@
+name: BJB Bank App CI/CD Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # ===================================================
+  # JOB 1: Build Docker Images & Simpan di GHCR
+  # Tugas: Ambil source code, build jadi image, push ke registry
+  # VPS tidak perlu menyentuh source code sama sekali
+  # ===================================================
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Login ke GitHub Container Registry (GHCR)
+      # GITHUB_TOKEN adalah secret otomatis dari GitHub, tidak perlu dibuat manual
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build image Backend dari folder ./backend dan push ke GHCR
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ghcr.io/${{ github.repository }}/backend:latest
+
+      # Build image Frontend dari folder ./frontend dan push ke GHCR
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ghcr.io/${{ github.repository }}/frontend:latest
+
+  # ===================================================
+  # JOB 2: Deploy ke VPS Azure
+  # Tugas: VPS hanya download config & pull image (tidak ada source code!)
+  # Sesuai prinsip "Server Tetap Bersih"
+  # ===================================================
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push # Tunggu Job 1 selesai dulu sebelum deploy
+
+    steps:
+      - name: Deploy to Azure VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            mkdir -p ~/app-bjb
+            cd ~/app-bjb
+
+            # Download HANYA docker-compose.yml — tidak ada source code di VPS!
+            curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/${{ github.repository }}/main/docker-compose.yml
+
+            # Tulis file .env backend dari GitHub Secrets (aman, tidak pernah masuk git)
+            mkdir -p backend
+            cat > backend/.env << 'ENVEOF'
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            ENVEOF
+
+            # Login ke GHCR agar VPS bisa pull image yang bersifat private
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull image terbaru dari GHCR (yang sudah dibangun Job 1)
+            # Tidak ada --build di sini! VPS tidak perlu source code
+            docker compose pull
+
+            # Nyalakan container (matikan dulu yang lama jika ada)
+            docker compose down
+            docker compose up -d
+
+            # Bersihkan image lama agar storage VPS tidak penuh
+            docker image prune -f

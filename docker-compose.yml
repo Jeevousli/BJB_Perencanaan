@@ -8,31 +8,36 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 17072005 # Ganti dengan password pilihanmu
+      POSTGRES_PASSWORD: 17072005
       POSTGRES_DB: bjb
     ports:
-      - "5432:5432" # Port dibuka agar kamu tetap bisa remote pakai DBeaver dari laptop lokal
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # 2. Service Backend Express.js
+  # Pakai image dari GHCR — VPS tidak perlu source code untuk build
   backend:
-    build: ./backend # Arahkan ke folder backend kamu
+    image: ghcr.io/jeevousli/bjb_perencanaan/backend:latest
     container_name: bjb_backend
     restart: always
     ports:
       - "4000:4000"
-    environment:
-      # URL database mengarah langsung ke service postgres_db di atas
-      DATABASE_URL: "postgresql://postgres:17072005@postgres_db:5432/bjb"
+    env_file:
+      - ./backend/.env
     depends_on:
       postgres_db:
-        # ✅ Tunggu sampai PostgreSQL benar-benar sehat, bukan hanya berjalan
         condition: service_healthy
 
   # 3. Service Frontend Next.js
+  # Pakai image dari GHCR — VPS tidak perlu source code untuk build
   frontend:
-    build: ./frontend # Arahkan ke folder frontend kamu
+    image: ghcr.io/jeevousli/bjb_perencanaan/frontend:latest
     container_name: bjb_frontend
     restart: always
     ports:
@@ -43,4 +48,4 @@ services:
       - backend
 
 volumes:
-  postgres_data: # Volume agar data di PostgreSQL tidak hilang saat container direstart
+  postgres_data:
