@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # 1. Service Database PostgreSQL
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: bjb_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 17072005 # Ganti dengan password pilihanmu
+      POSTGRES_DB: bjb
+    ports:
+      - "5432:5432" # Port dibuka agar kamu tetap bisa remote pakai DBeaver dari laptop lokal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Service Backend Express.js
+  backend:
+    build: ./backend # Arahkan ke folder backend kamu
+    container_name: bjb_backend
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      # URL database mengarah langsung ke service postgres_db di atas
+      DATABASE_URL: "postgresql://postgres:17072005@postgres_db:5432/bjb"
+    depends_on:
+      postgres_db:
+        # ✅ Tunggu sampai PostgreSQL benar-benar sehat, bukan hanya berjalan
+        condition: service_healthy
+
+  # 3. Service Frontend Next.js
+  frontend:
+    build: ./frontend # Arahkan ke folder frontend kamu
+    container_name: bjb_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://20.200.214.101:4000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data: # Volume agar data di PostgreSQL tidak hilang saat container direstart
