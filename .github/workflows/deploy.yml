@@ -67,6 +67,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 30m
           script: |
             mkdir -p ~/app-bjb
             cd ~/app-bjb
