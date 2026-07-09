@@ -62,7 +62,7 @@ export default function BannerCarousel() {
                         }`}
                 >
                     <img
-                        src={`http://127.0.0.1:4000/uploads/banners/${banner.imageUrl}`}
+                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000'}/uploads/banners/${banner.imageUrl}`}
                         alt={banner.judul}
                         className="w-full h-full object-cover"
                     />

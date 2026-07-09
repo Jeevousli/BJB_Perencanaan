@@ -68,7 +68,7 @@ export default function RecentDocuments() {
 
                         <div className="mt-3 pt-2 border-t border-gray-50">
                             <a
-                                href={`http://127.0.0.1:4000/uploads/document/${doc.fileUrl}`}
+                                href={`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000'}/uploads/document/${doc.fileUrl}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-xs text-amber-600 font-bold hover:text-amber-700 flex items-center gap-1 w-fit"

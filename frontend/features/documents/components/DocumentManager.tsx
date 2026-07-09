@@ -121,7 +121,7 @@ export default function DocumentManager() {
                                     <TableCell className="text-right space-x-2">
                                         {/* Buka PDF di Tab Baru */}
                                         <a
-                                            href={`http://127.0.0.1:4000/uploads/document/${doc.fileUrl}`}
+                                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000'}/uploads/document/${doc.fileUrl}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-semibold transition-colors"

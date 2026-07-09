@@ -177,7 +177,7 @@ export default function CategoryPage() {
                                                                 <div className="flex-1 min-w-0">
                                                                     <p className="text-xs font-medium text-gray-700 leading-tight truncate">{doc.title}</p>
                                                                     <a
-                                                                        href={`http://127.0.0.1:4000/uploads/document/${doc.fileUrl}`}
+                                                                        href={`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000'}/uploads/document/${doc.fileUrl}`}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="text-[10px] text-amber-600 font-semibold hover:underline flex items-center gap-1 mt-1"
