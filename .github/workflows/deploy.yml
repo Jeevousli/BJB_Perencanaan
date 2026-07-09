@@ -61,6 +61,10 @@ jobs:
     needs: build-and-push # Tunggu Job 1 selesai dulu sebelum deploy
 
     steps:
+      # Debug: Tampilkan IP runner GitHub Actions agar bisa dicek di auth.log VPS
+      - name: Print Runner IP
+        run: curl -s ifconfig.me
+
       - name: Deploy to Azure VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
