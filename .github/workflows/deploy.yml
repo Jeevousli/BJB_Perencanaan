@@ -50,6 +50,8 @@ jobs:
           context: ./frontend
           push: true
           tags: ghcr.io/${{ env.REPO_LC }}/frontend:latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
   # ===================================================
   # JOB 2: Deploy ke VPS Azure
