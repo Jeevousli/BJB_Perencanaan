@@ -24,6 +24,13 @@ router.post(
     documentController.uploadDocuments
 );
 
+router.put(
+    '/:id',
+    authorizeRole(['ADMIN']),
+    uploadPdf.single('file'),
+    documentController.updateDocument
+);
+
 router.delete('/:id', authorizeRole(['ADMIN']), documentController.deleteDocument);
 
 

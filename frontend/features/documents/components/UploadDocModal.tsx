@@ -117,13 +117,13 @@ export default function UploadDocModal({ onSuccess, isOpen, setIsOpen }: UploadD
     };
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 flex flex-col">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 flex flex-col">
 
                 {/* Header Modal */}
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <Upload className="w-5 h-5 text-blue-600" />
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <Upload className="w-4 h-4 text-blue-600" />
                         Tambah Dokumen Kajian
                     </h2>
                     <button
@@ -138,22 +138,22 @@ export default function UploadDocModal({ onSuccess, isOpen, setIsOpen }: UploadD
 
                     {/* Judul Kajian */}
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">Judul Kajian</label>
+                        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Judul Kajian</label>
                         <input
                             type="text"
                             {...register('title')}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:border-blue-500 outline-none"
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-[13px] bg-white focus:border-blue-500 outline-none"
                             placeholder="Contoh: Outlook Ekonomi Jawa Barat 2026"
                         />
-                        {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
+                        {errors.title && <p className="text-[11px] text-red-500">{errors.title.message}</p>}
                     </div>
                     {/* Deskripsi */}
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">Deskripsi Ringkas</label>
+                        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Deskripsi Ringkas</label>
                         <textarea
                             {...register('description')}
                             rows={3}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:border-blue-500 outline-none resize-none"
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-[13px] bg-white focus:border-blue-500 outline-none resize-none"
                             placeholder="Tulis ringkasan singkat isi kajian..."
                         />
                     </div>
@@ -162,25 +162,25 @@ export default function UploadDocModal({ onSuccess, isOpen, setIsOpen }: UploadD
 
                         {/* Dropdown Kategori */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Kategori</label>
+                        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Kategori</label>
                             <select
                                 {...register('categoryId')}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:border-blue-500 outline-none cursor-pointer"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-[13px] bg-white focus:border-blue-500 outline-none cursor-pointer"
                             >
                                 <option value="">-- Pilih Kategori --</option>
                                 {categories.map((cat) => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                                 ))}
                             </select>
-                            {errors.categoryId && <p className="text-xs text-red-500">{errors.categoryId.message}</p>}
+                            {errors.categoryId && <p className="text-[11px] text-red-500">{errors.categoryId.message}</p>}
                         </div>
                         {/* Dropdown Sub Kategori (Dinamis) */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Sub Kategori</label>
+                        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Sub Kategori</label>
                             <select
                                 {...register('subCategoryId')}
                                 disabled={filteredSubCategories.length === 0}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:border-blue-500 outline-none cursor-pointer disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-[13px] bg-white focus:border-blue-500 outline-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
                             >
                                 <option value="">-- Tanpa Sub Kategori --</option>
                                 {filteredSubCategories.map((sub) => (
@@ -194,50 +194,50 @@ export default function UploadDocModal({ onSuccess, isOpen, setIsOpen }: UploadD
 
                         {/* Unit Penyusun */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Unit Penyusun</label>
+                        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Unit Penyusun</label>
                             <input
                                 type="text"
                                 {...register('unitPenyusun')}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:border-blue-500 outline-none"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-[13px] bg-white focus:border-blue-500 outline-none"
                             />
-                            {errors.unitPenyusun && <p className="text-xs text-red-500">{errors.unitPenyusun.message}</p>}
+                            {errors.unitPenyusun && <p className="text-[11px] text-red-500">{errors.unitPenyusun.message}</p>}
                         </div>
                         {/* Tanggal Publikasi */}
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Tanggal Publikasi</label>
+                        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Tanggal Publikasi</label>
                             <input
                                 type="date"
                                 {...register('tanggalPublikasi')}
-                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:border-blue-500 outline-none cursor-pointer"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-[13px] bg-white focus:border-blue-500 outline-none cursor-pointer"
                             />
-                            {errors.tanggalPublikasi && <p className="text-xs text-red-500">{errors.tanggalPublikasi.message}</p>}
+                            {errors.tanggalPublikasi && <p className="text-[11px] text-red-500">{errors.tanggalPublikasi.message}</p>}
                         </div>
                     </div>
                     {/* File PDF Input */}
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase">File PDF Kajian</label>
+                        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">File PDF Kajian</label>
                         <input
                             type="file"
                             accept=".pdf"
                             {...register('file')}
-                            className="w-full border border-gray-200 border-dashed rounded-xl px-4 py-3 text-sm bg-slate-50 focus:border-blue-500 outline-none file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                            className="w-full border border-gray-200 border-dashed rounded-lg px-3 py-2 text-[13px] bg-slate-50 focus:border-blue-500 outline-none file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                         />
                         <p className="text-[10px] text-gray-400">Hanya dokumen PDF, maksimal ukuran 10 MB</p>
-                        {errors.file && <p className="text-xs text-red-500 mt-1">{errors.file.message as string}</p>}
+                        {errors.file && <p className="text-[11px] text-red-500 mt-1">{errors.file.message as string}</p>}
                     </div>
                     {/* Tombol Aksi */}
                     <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
                         <button
                             type="button"
                             onClick={() => { reset(); setIsOpen(false); }}
-                            className="px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold cursor-pointer"
+                            className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700 text-[13px] font-medium cursor-pointer"
                         >
                             Batal
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[13px] font-medium flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
                         >
                             {isSubmitting ? (
                                 <>

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as documentService from './documents.service';
 import { AuthRequest } from '../../middlewares/auth.middleware';
+import { uploadToAzureBlob } from '../../services/azureStorage.service';
 
 // upload dokumen baru
 
@@ -16,6 +17,9 @@ export const uploadDocuments = async (req: AuthRequest, res: Response): Promise<
                 })
             return;
         }
+        // upload ke azure blob
+        const fileUrl = await uploadToAzureBlob(file, 'documents');
+
         // ambil inputan teks dri form
         const { title, description, categoryId, subCategoryId, unitPenyusun, tanggalPublikasi } = req.body;
         //susun data untuk disimpan ke database
@@ -27,7 +31,7 @@ export const uploadDocuments = async (req: AuthRequest, res: Response): Promise<
             unitPenyusun: unitPenyusun || "Tim Riset BJB", // Kasih nilai default kalau lupa diisi
             tanggalPublikasi: tanggalPublikasi ? new Date(tanggalPublikasi) : new Date(), // Ubah teks jadi format Waktu/Tanggal
             uploaderId: user.userId, // Ambil dari user yang sedang login
-            fileUrl: file.filename   // Ambil dari file yang diupload multer
+            fileUrl: fileUrl   // Ambil URL dari Azure Blob
         };
 
         const newDoc = await documentService.createDocument(documentData)
@@ -41,6 +45,48 @@ export const uploadDocuments = async (req: AuthRequest, res: Response): Promise<
         res.status(400).json({ message: error.message })
     }
 
+}
+
+// update dokumen
+export const updateDocument = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const id = req.params.id;
+        const user = req.user;
+        const file = req.file;
+        
+        if (!id || typeof id !== 'string') {
+            res.status(400).json({ message: "Format ID tidak valid atau kosong!" });
+            return;
+        }
+
+        const { title, description, categoryId, subCategoryId, unitPenyusun, tanggalPublikasi } = req.body;
+        
+        const dataToUpdate: any = {
+            updatedById: user.userId
+        };
+
+        if (title) dataToUpdate.title = title;
+        if (description !== undefined) dataToUpdate.description = description;
+        if (categoryId) dataToUpdate.categoryId = categoryId;
+        if (subCategoryId !== undefined) dataToUpdate.subCategoryId = subCategoryId ? subCategoryId : null;
+        if (unitPenyusun) dataToUpdate.unitPenyusun = unitPenyusun;
+        if (tanggalPublikasi) dataToUpdate.tanggalPublikasi = new Date(tanggalPublikasi);
+
+        // Jika ada file PDF BARU yang diupload
+        if (file) {
+            const fileUrl = await uploadToAzureBlob(file, 'documents');
+            dataToUpdate.fileUrl = fileUrl;
+        }
+
+        const updatedDoc = await documentService.updateDocument(id, dataToUpdate);
+
+        res.status(200).json({
+            message: 'Dokumen berhasil diupdate', data: updatedDoc
+        });
+
+    } catch (error: any) {
+        res.status(400).json({ message: error.message });
+    }
 }
 
 // ambil semua document

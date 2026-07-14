@@ -5,6 +5,8 @@ import { FileText, Plus, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { getDocumentApi, deleteDocumentApi } from '../services/documentApi';
 import UploadDocModal from './UploadDocModal';
+import EditDocModal from './EditDocModal';
+import { Edit3 } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -22,12 +24,17 @@ interface Document {
     fileUrl: string;
     category: { name: string };
     subCategory?: { name: string } | null;
+    uploader?: { username: string };
+    updatedBy?: { username: string };
+    updatedAt?: string;
 }
 
 export default function DocumentManager() {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
 
     // 1. Fungsi mengambil daftar dokumen dari backend
     const fetchDocuments = async () => {
@@ -75,17 +82,16 @@ export default function DocumentManager() {
         <div className="space-y-6">
 
             {/* Header Halaman */}
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                <div className="space-y-1">
-                    <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-blue-600" />
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-2">
+                <div className="space-y-0.5">
+                    <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                         Kelola Dokumen Publikasi
                     </h1>
-                    <p className="text-sm text-gray-500">Unggah dan kelola dokumen riset ekonomi serta kajian perencanaan.</p>
+                    <p className="text-[13px] text-gray-500">Unggah dan kelola dokumen riset ekonomi serta kajian perencanaan.</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2 shadow-md shadow-blue-500/10 cursor-pointer self-start sm:self-auto transition-colors"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[13px] font-medium flex items-center gap-2 shadow-sm cursor-pointer self-start sm:self-auto transition-colors"
                 >
                     <Plus className="w-4 h-4" />
                     Tambah Dokumen
@@ -93,49 +99,66 @@ export default function DocumentManager() {
             </div>
 
             {/* Tabel Daftar Dokumen */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] overflow-x-auto">
                 {isLoading ? (
                     <div className="p-12 text-center text-gray-500 font-medium">Sedang memuat dokumen...</div>
                 ) : documents.length === 0 ? (
                     <div className="p-12 text-center text-gray-500 font-medium">Belum ada dokumen yang diunggah.</div>
                 ) : (
                     <Table>
-                        <TableHeader className="bg-slate-50">
-                            <TableRow>
-                                <TableHead className="font-semibold text-gray-700">Judul Kajian</TableHead>
-                                <TableHead className="font-semibold text-gray-700">Kategori</TableHead>
-                                <TableHead className="font-semibold text-gray-700">Sub Kategori</TableHead>
-                                <TableHead className="font-semibold text-gray-700">Penyusun</TableHead>
-                                <TableHead className="font-semibold text-gray-700">Tanggal Rilis</TableHead>
-                                <TableHead className="font-semibold text-gray-700 text-right">Aksi</TableHead>
+                        <TableHeader className="bg-white">
+                            <TableRow className="border-b border-gray-100 hover:bg-transparent">
+                                <TableHead className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Judul Kajian</TableHead>
+                                <TableHead className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Kategori</TableHead>
+                                <TableHead className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Sub Kategori</TableHead>
+                                <TableHead className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Penyusun</TableHead>
+                                <TableHead className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Tanggal Rilis</TableHead>
+                                <TableHead className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider text-right whitespace-nowrap">Aksi</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {documents.map((doc) => (
-                                <TableRow key={doc.id} className="hover:bg-slate-50/50">
-                                    <TableCell className="font-medium text-gray-900 max-w-xs truncate">{doc.title}</TableCell>
-                                    <TableCell className="text-gray-600">{doc.category.name}</TableCell>
-                                    <TableCell className="text-gray-600">{doc.subCategory?.name || '-'}</TableCell>
-                                    <TableCell className="text-gray-600">{doc.unitPenyusun}</TableCell>
-                                    <TableCell className="text-gray-600">{formatDate(doc.tanggalPublikasi)}</TableCell>
-                                    <TableCell className="text-right space-x-2">
+                                <TableRow key={doc.id} className="hover:bg-slate-50/50 border-b border-gray-100 group">
+                                    <TableCell className="font-medium text-gray-900 min-w-[200px] max-w-[300px] text-[13px]">
+                                        <div className="truncate">{doc.title}</div>
+                                        <div className="text-[10px] text-gray-400 font-normal mt-1 leading-tight">
+                                            Dibuat: {doc.uploader?.username || '-'}
+                                            {doc.updatedBy && <><br/>Diubah: {doc.updatedBy.username}</>}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-gray-500 text-[13px] whitespace-nowrap">{doc.category.name}</TableCell>
+                                    <TableCell className="text-gray-500 text-[13px] whitespace-nowrap">{doc.subCategory?.name || '-'}</TableCell>
+                                    <TableCell className="text-gray-500 text-[13px] whitespace-nowrap">{doc.unitPenyusun}</TableCell>
+                                    <TableCell className="text-gray-500 text-[13px] whitespace-nowrap">{formatDate(doc.tanggalPublikasi)}</TableCell>
+                                    <TableCell className="text-right space-x-1 whitespace-nowrap">
                                         {/* Buka PDF di Tab Baru */}
                                         <a
-                                            href={`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000'}/uploads/document/${doc.fileUrl}`}
+                                            href={doc.fileUrl.startsWith('http') ? doc.fileUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000'}/uploads/document/${doc.fileUrl}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-semibold transition-colors"
+                                            className="inline-flex p-1.5 text-gray-400 hover:text-blue-600 rounded-lg transition-colors cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                            title="Buka PDF"
                                         >
-                                            <ExternalLink className="w-3.5 h-3.5" />
-                                            Buka PDF
+                                            <ExternalLink className="w-4 h-4" />
                                         </a>
+                                        {/* Ubah Dokumen */}
+                                        <button
+                                            onClick={() => {
+                                                setSelectedDoc(doc);
+                                                setIsEditModalOpen(true);
+                                            }}
+                                            className="inline-flex p-1.5 text-gray-400 hover:text-yellow-600 rounded-lg transition-colors cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                            title="Edit"
+                                        >
+                                            <Edit3 className="w-4 h-4" />
+                                        </button>
                                         {/* Hapus Dokumen */}
                                         <button
                                             onClick={() => handleDelete(doc.id, doc.title)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                                            className="inline-flex p-1.5 text-gray-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                            title="Hapus"
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                            Hapus
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </TableCell>
                                 </TableRow>
@@ -151,6 +174,16 @@ export default function DocumentManager() {
                 setIsOpen={setIsModalOpen}
                 onSuccess={fetchDocuments} // Jika sukses upload, picu refresh tabel
             />
+
+            {/* Modal Dialog Pop-up Edit */}
+            {selectedDoc && (
+                <EditDocModal
+                    isOpen={isEditModalOpen}
+                    setIsOpen={setIsEditModalOpen}
+                    onSuccess={fetchDocuments} // Jika sukses edit, picu refresh tabel
+                    documentData={selectedDoc}
+                />
+            )}
 
         </div>
     );

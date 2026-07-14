@@ -10,7 +10,15 @@ export const findAllDocuments = async () => {
                     username: true, email: true
                 }
             },
+            updatedBy: {
+                select: {
+                    username: true
+                }
+            },
             category: true, subCategory: true
+        },
+        orderBy: {
+            createdAt: 'desc'
         }
     })
 }
@@ -24,6 +32,11 @@ export const findDocumentById = async (id: string) => {
             uploader: {
                 select: {
                     username: true, email: true
+                }
+            },
+            updatedBy: {
+                select: {
+                    username: true
                 }
             },
             category: true, subCategory: true
@@ -47,12 +60,21 @@ export const deleteDocument = async (id: string) => {
     })
 }
 
+// update dokumen
+export const updateDocument = async (id: string, data: any) => {
+    return prisma.document.update({
+        where: { id },
+        data
+    });
+}
+
 // Ambil dokumen berdasarkan subCategoryId
 export const findDocumentsBySubCategory = async (subCategoryId: string) => {
     return prisma.document.findMany({
         where: { subCategoryId },
         include: {
             uploader: { select: { username: true } },
+            updatedBy: { select: { username: true } },
             category: true,
             subCategory: true
         },
@@ -66,6 +88,7 @@ export const findDocumentsByCategory = async (categoryId: string) => {
         where: { categoryId },
         include: {
             uploader: { select: { username: true } },
+            updatedBy: { select: { username: true } },
             category: true,
             subCategory: true
         },

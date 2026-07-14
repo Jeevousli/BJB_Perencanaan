@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronDown, UserCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ChevronDown, UserCircle, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
 import { getCategoriesApi } from '@/features/documents/services/documentApi';
 
 interface SubCategory {
@@ -20,6 +22,9 @@ interface Category {
 export default function ViewerNavbar() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const router = useRouter();
 
     // Ambil data kategori dari backend
     useEffect(() => {
@@ -32,7 +37,24 @@ export default function ViewerNavbar() {
             }
         };
         fetchCategories();
+
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                const parsed = JSON.parse(storedUser);
+                setUserRole(parsed.role);
+            } catch (e) {
+                console.error("Gagal parse user data");
+            }
+        }
     }, []);
+
+    const handleLogout = () => {
+        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        localStorage.removeItem('user');
+        toast.success('Berhasil keluar sistem.');
+        window.location.href = '/login';
+    };
 
     return (
         <nav className="bg-[#1e293b] text-white py-4 px-6 md:px-12 flex items-center justify-between sticky top-0 z-50 shadow-md">
@@ -90,10 +112,34 @@ export default function ViewerNavbar() {
             </div>
 
             {/* Bagian Kanan: Tombol Profil */}
-            <div className="flex items-center">
-                <button className="flex items-center gap-2 bg-[#d99614] hover:bg-[#c58b19] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer">
+            <div className="flex items-center relative">
+                <button 
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="flex items-center gap-2 bg-[#d99614] hover:bg-[#c58b19] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
+                >
                     Profil <ChevronDown className="w-4 h-4" />
                 </button>
+                
+                {isProfileOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
+                        {userRole === 'ADMIN' && (
+                            <Link 
+                                href="/admin/dashboard"
+                                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer font-medium border-b border-gray-100"
+                            >
+                                <UserCircle className="w-4 h-4" />
+                                Dashboard Admin
+                            </Link>
+                        )}
+                        <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer font-medium"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            Keluar
+                        </button>
+                    </div>
+                )}
             </div>
         </nav>
     );

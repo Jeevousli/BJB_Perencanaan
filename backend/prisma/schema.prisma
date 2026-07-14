@@ -22,8 +22,23 @@ model User {
   password String
   role Role @default(VIEWER)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
+  
+  // Relations
   documents Document[]
+  
+  // Audit Log Relations
+  categoriesCreated Category[] @relation("CategoryCreatedBy")
+  categoriesUpdated Category[] @relation("CategoryUpdatedBy")
+  subCategoriesCreated SubCategory[] @relation("SubCategoryCreatedBy")
+  subCategoriesUpdated SubCategory[] @relation("SubCategoryUpdatedBy")
+  documentsUpdated Document[] @relation("DocumentUpdatedBy")
+  bannersCreated MasterBeranda[] @relation("BannerCreatedBy")
+  bannersUpdated MasterBeranda[] @relation("BannerUpdatedBy")
+  
+  categoryBannersCreated CategoryBanner[] @relation("CategoryBannerCreatedBy")
+  categoryBannersUpdated CategoryBanner[] @relation("CategoryBannerUpdatedBy")
+
   @@map("users")
 }
 
@@ -35,18 +50,48 @@ enum Role {
 model Category {
   id String @id @default(uuid())
   name String @unique
+  bannerUrl String?
+  pageTitle String?
+
   subCategories SubCategory[]
   documents Document[]
+
+  // Audit Logs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  createdById String?
+  updatedById String?
+
+  createdBy   User? @relation("CategoryCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("CategoryUpdatedBy", fields: [updatedById], references: [id])
+
+  banners     CategoryBanner[]
+
   @@map("categories")
 }
 
-model SubCategory{
+model SubCategory {
   id String @id @default(uuid())
   name String @unique
+  bannerUrl String?
+  pageTitle String?
+
   // Relasi ke tabel Category
   categoryId String
-  category Category @relation(fields : [categoryId], references : [id], onDelete : Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   documents Document[]
+
+  // Audit Logs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  createdById String?
+  updatedById String?
+
+  createdBy   User? @relation("SubCategoryCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("SubCategoryUpdatedBy", fields: [updatedById], references: [id])
+
+  banners     CategoryBanner[]
+
   @@map("sub_categories")
 }
 
@@ -71,7 +116,11 @@ model Document {
   unitPenyusun     String
   tanggalPublikasi DateTime
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  // Audit Logs
+  updatedById   String?
+  updatedBy     User?    @relation("DocumentUpdatedBy", fields: [updatedById], references: [id])
 
   @@map("documents")
 }
@@ -83,7 +132,48 @@ model MasterBeranda {
   imageUrl  String   // Nama file gambar
   isActive  Boolean  @default(true) // Tombol on/off
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Audit Logs
+  createdById String?
+  updatedById String?
+
+  createdBy   User? @relation("BannerCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("BannerUpdatedBy", fields: [updatedById], references: [id])
 
   @@map("master_beranda")
+}
+
+// Untuk Pengaturan Teks Dinamis Web
+model SiteSetting {
+  id        String   @id @default("1")
+  heroTitle String   @default("Selamat datang di situs Research and Office of Economist bank bjb")
+  heroSubtitle String @default("Temukan dan unduh dokumen kajian ekonomi & perbankan BJB")
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model CategoryBanner {
+  id        String   @id @default(uuid())
+  judul     String
+  imageUrl  String
+  isActive  Boolean  @default(true)
+  
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  subCategoryId String?
+  subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  
+  // Audit Logs
+  createdById String?
+  updatedById String?
+  createdBy   User? @relation("CategoryBannerCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User? @relation("CategoryBannerUpdatedBy", fields: [updatedById], references: [id])
+
+  @@map("category_banners")
 }

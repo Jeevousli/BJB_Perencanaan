@@ -1,6 +1,7 @@
 import * as documentRepository from './documents.repository';
 import fs from 'fs';
 import path from 'path';
+import { deleteFromAzureBlob } from '../../services/azureStorage.service';
 
 export const getAllDocuments = async () => {
     return await documentRepository.findAllDocuments();
@@ -18,14 +19,36 @@ export const createDocument = async (data: any) => {
     return await documentRepository.createDocument(data)
 }
 
+export const updateDocument = async (id: string, data: any) => {
+    const doc = await getDocumentById(id);
+    
+    // Jika ada fileUrl baru (PDF baru) dan ada file lama, hapus file lama dari Azure/Lokal
+    if (data.fileUrl && doc.fileUrl) {
+        if (doc.fileUrl.startsWith('http')) {
+            await deleteFromAzureBlob(doc.fileUrl, 'documents');
+        } else {
+            const filePath = path.join(process.cwd(), 'uploads/documents', doc.fileUrl)
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath)
+            }
+        }
+    }
+
+    return await documentRepository.updateDocument(id, data);
+}
+
 export const deleteDocument = async (id: string) => {
     // cari docs nya
     const doc = await getDocumentById(id);
-    // tentukan lokasi file fisik 
-    const filePath = path.join(process.cwd(), 'uploads/documents', doc.fileUrl)
-    // cek filenya di hardisk, jika ada, hapus
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
+    // Hapus dari Azure Blob Storage
+    if (doc.fileUrl && doc.fileUrl.startsWith('http')) {
+        await deleteFromAzureBlob(doc.fileUrl, 'documents');
+    } else {
+        // Fallback jika file sebelumnya disimpan secara lokal
+        const filePath = path.join(process.cwd(), 'uploads/documents', doc.fileUrl)
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath)
+        }
     }
     // hapus data dri database
 

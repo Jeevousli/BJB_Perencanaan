@@ -1,6 +1,7 @@
 import * as bannerRepository from './banners.repository';
 import fs from 'fs';
 import path from 'path';
+import { deleteFromAzureBlob } from '../../services/azureStorage.service';
 
 export const getAllBanners = async () => {
     return await bannerRepository.findAllBanners()
@@ -20,9 +21,13 @@ export const createBanner = async (data: any) => {
 export const updateBanner = async (id: string, data: any) => {
     const banner = await getBannersById(id);
     if (data.imageUrl) {
-        const filePath = path.join(process.cwd(), 'uploads/banners', banner.imageUrl);
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath)
+        if (banner.imageUrl && banner.imageUrl.startsWith('http')) {
+            await deleteFromAzureBlob(banner.imageUrl, 'banners');
+        } else {
+            const filePath = path.join(process.cwd(), 'uploads/banners', banner.imageUrl);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath)
+            }
         }
         return await bannerRepository.updateBanner(id, data)
     }
@@ -38,9 +43,13 @@ export const deleteBanner = async (id: string) => {
     const banner = await getBannersById(id);
 
     // Hapus file fisik GAMBAR-nya
-    const filePath = path.join(process.cwd(), 'uploads/banners', banner.imageUrl);
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+    if (banner.imageUrl && banner.imageUrl.startsWith('http')) {
+        await deleteFromAzureBlob(banner.imageUrl, 'banners');
+    } else {
+        const filePath = path.join(process.cwd(), 'uploads/banners', banner.imageUrl);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
     }
     return await bannerRepository.deleteBanner(id);
 };

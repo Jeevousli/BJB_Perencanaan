@@ -38,7 +38,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 // export fungsi upload, maksimal ukuran file 10mb
 
 export const uploadPdf = multer({
-    storage: storage,
+    storage: multer.memoryStorage(),
     fileFilter: fileFilter,
     limits: {
         fileSize: 10 * 1024 * 1024
@@ -80,7 +80,7 @@ const imageFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterC
 
 // 4. Export fungsi upload gambar, maksimal 5MB
 export const uploadImage = multer({
-    storage: imageStorage,
+    storage: multer.memoryStorage(),
     fileFilter: imageFilter,
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB cukup untuk gambar
 });

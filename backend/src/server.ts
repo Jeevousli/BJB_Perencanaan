@@ -5,6 +5,8 @@ import userRoutes from './modules/users/users.routes';
 import categoryRoutes from './modules/categories/categories.routes';
 import documentRoutes from './modules/documents/documents.routes';
 import bannerRoutes from './modules/banners/banners.routes';
+import settingsRoutes from './modules/settings/settings.routes';
+import auditRoutes from './modules/audit/audit.routes';
 import path from 'path';
 import cors from 'cors';
 
@@ -21,6 +23,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/banners', bannerRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/audit', auditRoutes);
 
 
 

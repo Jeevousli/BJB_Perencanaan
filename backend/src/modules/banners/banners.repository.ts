@@ -2,6 +2,10 @@ import prisma from "../../config/database";
 
 export const findAllBanners = async () => {
     return prisma.masterBeranda.findMany({
+        include: {
+            createdBy: { select: { username: true } },
+            updatedBy: { select: { username: true } }
+        },
         orderBy: {
             createdAt: 'desc'
         }
@@ -10,7 +14,11 @@ export const findAllBanners = async () => {
 
 export const findBannersById = async (id: string) => {
     return prisma.masterBeranda.findUnique({
-        where: { id }
+        where: { id },
+        include: {
+            createdBy: { select: { username: true } },
+            updatedBy: { select: { username: true } }
+        }
     })
 }
 

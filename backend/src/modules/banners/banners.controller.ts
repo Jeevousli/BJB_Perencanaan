@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 import * as bannerService from './banners.service';
-import { isatty } from 'node:tty';
+import { uploadToAzureBlob } from '../../services/azureStorage.service';
+import { AuthRequest } from '../../middlewares/auth.middleware';
 
 // tambah banner baru
 
-export const createBanner = async (req: Request, res: Response): Promise<void> => {
+export const createBanner = async (req: any, res: Response): Promise<void> => {
     try {
         const file = (req as any).file;
+        const user = req.user;
 
         if (!file) {
             res.status(400).json({
@@ -14,12 +16,14 @@ export const createBanner = async (req: Request, res: Response): Promise<void> =
             })
             return
         }
+        const fileUrl = await uploadToAzureBlob(file, 'banners');
         const { judul, label, isActive } = req.body;
         const data = {
             judul,
             label: label ? label : null,
             isActive: isActive === 'false' ? false : true,
-            imageUrl: file.filename
+            imageUrl: fileUrl,
+            createdById: user.userId
         }
         const newBanner = await bannerService.createBanner(data)
         res.status(200).json({
@@ -51,17 +55,19 @@ export const getAllBanners = async (req: Request, res: Response) => {
 
 // tombol on/off banner
 
-export const toggleBanner = async (req: Request, res: Response) => {
+export const toggleBanner = async (req: any, res: Response) => {
     try {
         const { id } = req.params;
         const { isActive } = req.body;
+        const user = req.user;
+
         if (!id || typeof id !== 'string') {
             res.status(400).json({ message: "Format ID tidak valid atau kosong!" });
             return;
         }
 
         const status = isActive === true || isActive === 'true'
-        await bannerService.toggleBannerStatus(id, status)
+        await bannerService.updateBanner(id, { isActive: status, updatedById: user.userId });
         res.status(200).json({
             message: ' Status banner berhasil diubah menjadi' + status
         })
@@ -73,22 +79,27 @@ export const toggleBanner = async (req: Request, res: Response) => {
 }
 // update banner
 
-export const updateBanner = async (req: Request, res: Response): Promise<void> => {
+export const updateBanner = async (req: any, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
+        const user = req.user;
+
         if (!id || typeof id !== 'string') {
             res.status(400).json({ message: "Format ID tidak valid atau kosong!" });
             return;
         }
         const { judul, label, isActive } = req.body;
-        const dataToUpdate: any = {}
+        const dataToUpdate: any = {
+            updatedById: user.userId
+        };
         // hanya masukan data yg hanya dikirim user
         if (judul) dataToUpdate.judul = judul;
         if (label !== undefined) dataToUpdate.label = label;
         if (isActive !== undefined) dataToUpdate.isActive = isActive === 'false' ? false : true;
         // PENTING: Jika ada gambar BARU yang diupload, tambahkan ke dataToUpdate
         if ((req as any).file) {
-            dataToUpdate.imageUrl = (req as any).file.filename;
+            const fileUrl = await uploadToAzureBlob((req as any).file, 'banners');
+            dataToUpdate.imageUrl = fileUrl;
         }
 
         const updatedBanner = await bannerService.updateBanner(id, dataToUpdate);

@@ -9,6 +9,13 @@ export const getDocumentApi =
 
 export const getCategoriesApi = async () => {
     const response = await axiosClient.get('/categories');
+    if (response.data && response.data.data) {
+        const sortedCategories = response.data.data.map((cat: any) => ({
+            ...cat,
+            subCategories: cat.subCategories ? cat.subCategories.sort((a: any, b: any) => a.name.localeCompare(b.name)) : []
+        })).sort((a: any, b: any) => a.name.localeCompare(b.name));
+        return { ...response.data, data: sortedCategories };
+    }
     return response.data;
 }
 
@@ -18,6 +25,15 @@ export const createDocumentApi = async (formData: FormData) => {
     const response = await axiosClient.post('/documents', formData, {
         headers: {
             'Content-Type': 'multipart/form-data' // wajib setel khusus untuk upload file saja 
+        }
+    })
+    return response.data;
+}
+
+export const updateDocumentApi = async (id: string, formData: FormData) => {
+    const response = await axiosClient.put(`/documents/${id}`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
         }
     })
     return response.data;
